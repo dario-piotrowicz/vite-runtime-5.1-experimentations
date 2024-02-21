@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2015"],
+    "resolveJsonModule": true,
+    "moduleResolution": "Bundler",
+    "checkJs": false,
+    "skipLibCheck": true,
+    "exactOptionalPropertyTypes": false,
+
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": ["src", ".eslintrc.js"]
+}
