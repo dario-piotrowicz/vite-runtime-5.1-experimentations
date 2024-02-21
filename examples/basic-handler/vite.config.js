@@ -1,4 +1,3 @@
-import { createViteRuntime } from 'vite';
 import { viteRuntimeNode } from 'vite-runtime-node-plugin';
 
 export function basicHandler({ entrypoint }) {
@@ -6,19 +5,13 @@ export function basicHandler({ entrypoint }) {
     name: 'basic-handler-plugin',
     configureServer(server) {
       return async () => {
-        const runtime = await createViteRuntime(server, {
-          hmr: false,
-        });
+        console.log('\n\n[basic-handler-plugin] configureServer...\n\n');
+        const ssrRuntime = server.ssrRuntime;
 
-        const dispatchRequest = async request => {
-          // Note: clear the moduleCache so that if the entrypoint changes we do reflect such changes
-          runtime.moduleCache.clear();
-          const module = await runtime.executeUrl(entrypoint);
-          return module.default.fetch(request);
-        };
+        ssrRuntime.initialize({ entrypoint });
 
         server.middlewares.use(async (req, res) => {
-          const resp = await dispatchRequest(req);
+          const resp = await ssrRuntime.dispatchRequest(req);
           res.end(await resp.text());
         });
       };

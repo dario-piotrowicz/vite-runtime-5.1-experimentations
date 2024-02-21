@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild --bundle --format=esm ./src/index.ts --platform=node --outfile=./dist/index.js",
+    "build": "esbuild --bundle --format=esm ./src/index.ts --platform=node --outfile=./dist/index.js --external:vite",
     "build:watch": "npm run build -- --watch=forever",
     "build:types": "tsc --emitDeclarationOnly --outDir ./dist"
   },
