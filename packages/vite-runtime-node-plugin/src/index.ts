@@ -12,22 +12,18 @@ export function viteRuntimeNode() {
 
       console.log('\n\n[vite-runtime-node-plugin] runtime created...\n\n');
 
-      let entrypoint: string;
-
-      const initialize: SSrRuntime['initialize'] = options => {
-        entrypoint = options.entrypoint;
-      };
-
-      const dispatchRequest = async request => {
-        // Note: clear the moduleCache so that if the entrypoint changes we do reflect such changes
-        runtime.moduleCache.clear();
-        const module = await runtime.executeUrl(entrypoint);
-        return module.default.fetch(request);
+      const createRequestDispatcher = ({ entrypoint }: CreateRequestDispatcher) => {
+          const dispatchRequest = async request => {
+            // Note: clear the moduleCache so that if the entrypoint changes we do reflect such changes
+            runtime.moduleCache.clear();
+            const module = await runtime.executeUrl(entrypoint);
+            return module.default.fetch(request);
+          };
+          return dispatchRequest;
       };
 
       server.ssrRuntime = {
-        initialize,
-        dispatchRequest,
+        createRequestDispatcher,
       };
     },
   };
@@ -40,10 +36,9 @@ declare module 'vite' {
 }
 
 type SSrRuntime = {
-  dispatchRequest: Function;
-  initialize: (options: InitializeOptions) => void;
+  createRequestDispatcher: (options: CreateRequestDispatcher) => Function;
 };
 
-type InitializeOptions = {
+type CreateRequestDispatcher = {
   entrypoint: string;
 };
