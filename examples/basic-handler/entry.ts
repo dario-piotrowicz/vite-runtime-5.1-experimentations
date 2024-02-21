@@ -2,7 +2,7 @@ export default {
   async fetch(_request: Request) {
     return new Response(html, {
       headers: {
-        "content-type": "text/html",
+        'content-type': 'text/html',
       },
     });
   },
