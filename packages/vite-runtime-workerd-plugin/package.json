@@ -1,0 +1,28 @@
+{
+  "name": "vite-runtime-workerd-plugin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.cjs",
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "build:types": "tsc --emitDeclarationOnly --outDir ./dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "5.1.x",
+    "esbuild": "^0.15.3",
+    "@types/node": "^20.11.19",
+    "typescript": "^5.0.4",
+    "tsup": "^8.0.2"
+  },
+  "peerDependencies": {
+    "miniflare": "^3.20240129.3"
+  }
+}

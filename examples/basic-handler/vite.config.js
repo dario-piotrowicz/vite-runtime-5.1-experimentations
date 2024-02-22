@@ -1,4 +1,5 @@
 import { viteRuntimeNode } from 'vite-runtime-node-plugin';
+import { viteRuntimeWorkerd } from 'vite-runtime-workerd-plugin';
 
 export function basicHandler({ entrypoint }) {
   return {
@@ -19,6 +20,14 @@ export function basicHandler({ entrypoint }) {
   };
 }
 
+const runtimePlugins = {
+  node: viteRuntimeNode,
+  workerd: viteRuntimeWorkerd,
+};
+
+const runtime =
+  runtimePlugins[process.env._VITE_TARGET_RUNTIME] ?? runtimePlugins['node'];
+
 /** @type {import('vite').UserConfig} */
 export default {
   appType: 'custom',
@@ -28,7 +37,7 @@ export default {
   optimizeDeps: {
     include: [],
   },
-  plugins: [viteRuntimeNode(), basicHandler({ entrypoint: './entry.ts' })],
+  plugins: [runtime(), basicHandler({ entrypoint: './entry.ts' })],
   build: {
     minify: false,
   },
