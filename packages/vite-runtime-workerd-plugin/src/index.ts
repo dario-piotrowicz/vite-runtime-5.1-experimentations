@@ -107,7 +107,6 @@ function setupFetchModuleEndpoint(server: ViteDevServer) {
 async function getClientDispatchRequest(
   server: ViteDevServer,
   entrypoint: string,
-  //@ts-ignore
 ): Promise<DispatchRequest> {
   const serverAddress = server.httpServer.address();
   const serverBaseAddress =
@@ -118,8 +117,6 @@ async function getClientDispatchRequest(
   const fetchModuleUrl = `${serverBaseAddress}${fetchModulePath}`;
 
   const script = await getClientScript(server, entrypoint, fetchModuleUrl);
-
-  // const scriptPath = join(server.config.root);
 
   const mf = new Miniflare({
     script,
