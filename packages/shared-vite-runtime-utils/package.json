@@ -1,7 +1,5 @@
 {
   "name": "shared-vite-runtime-utils",
-  "version": "1.0.0",
-  "description": "",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -9,9 +7,6 @@
     "build:watch": "tsup --watch",
     "build:types": "tsc --emitDeclarationOnly --outDir ./dist"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "files": [
     "dist"
   ],

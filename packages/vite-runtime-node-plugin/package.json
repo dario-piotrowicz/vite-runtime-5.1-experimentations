@@ -1,7 +1,5 @@
 {
   "name": "vite-runtime-node-plugin",
-  "version": "1.0.0",
-  "description": "",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -12,9 +10,6 @@
   "files": [
     "dist"
   ],
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "shared-vite-runtime-utils": "workspace:*"
   },

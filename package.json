@@ -1,14 +1,13 @@
 {
   "name": "vite-runtime-5.1-experimentations",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
+    "postinstall": "pnpm build:packages",
+    "build:packages": "pnpm _build:packages:code && pnpm _build:packages:types",
+    "_build:packages:code": "pnpm --filter shared-vite-runtime-utils --filter vite-runtime-node-plugin --filter vite-runtime-workerd-plugin --sequential build",
+    "_build:packages:types": "pnpm --filter shared-vite-runtime-utils --filter vite-runtime-node-plugin --filter vite-runtime-workerd-plugin --sequential build:types",
     "prettify": "prettier --ignore-path .gitignore --write ."
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "prettier": "^3.2.5"
   }
