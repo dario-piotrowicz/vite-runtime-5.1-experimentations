@@ -79,7 +79,7 @@ function getCreateRequestDispatcher(server: ViteDevServer) {
 
 /**
  * Sets up a fetch-module endpoint that can be used to fetch modules
- * from the client (running in isolation the vm)
+ * from the client (running in isolation in the vm)
  *
  * Note: This could be implemented differently like via websockets or an rpc mechanism
  */
