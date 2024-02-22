@@ -107,7 +107,7 @@ function setupFetchModuleEndpoint(server: ViteDevServer) {
  */
 async function getClientDispatchRequest(
   server: ViteDevServer,
-  entrypoint: any,
+  entrypoint: string,
 ): Promise<DispatchRequest> {
   const module = {};
 
