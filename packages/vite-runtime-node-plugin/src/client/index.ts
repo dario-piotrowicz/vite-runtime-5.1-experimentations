@@ -22,8 +22,9 @@ const runtime = new ViteRuntime(
 );
 
 export async function dispatchRequestImplementation(req: Request) {
-  // Note: clear the moduleCache so that if the entrypoint changes we do reflect such changes
-  //       this should not be needed when HMR is working
+  // Note: clear the moduleCache so that if the entrypoint changes the
+  //       changes are picked up (after manually refreshing the browser).
+  //       This should not be needed when HMR is working
   runtime.moduleCache.clear();
 
   const entrypointModule = await runtime.executeUrl(__ENTRYPOINT__);
