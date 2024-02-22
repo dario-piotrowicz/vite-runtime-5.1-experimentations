@@ -1,60 +1,101 @@
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import { runInContext, createContext } from 'node:vm';
 
 import { type ViteDevServer } from 'vite';
-import { ESModulesRunner, ViteRuntime } from 'vite/runtime';
+
+const _dirname = dirname(fileURLToPath(import.meta.url));
+const clientPath = resolve(_dirname, './client/index.cjs');
 
 export function viteRuntimeNode() {
   return {
     name: 'vite-runtime-node-plugin',
     async configureServer(server: ViteDevServer) {
-      console.log('\n\n[vite-runtime-node-plugin] configureServer...\n\n');
-
-      const vmContext = createContext({
-        ViteRuntime,
-        ESModulesRunner,
-        ssrFetchModule: server.ssrFetchModule,
-        root: JSON.stringify(server.config.root),
+      let ssrRuntimeResolve: (runtime: SSRRuntime) => void;
+      const ssrRuntime$ = new Promise<SSRRuntime>(resolve => {
+        ssrRuntimeResolve = resolve;
       });
-      const createRequestDispatcher = async ({ entrypoint }) => {
-        const vmFetch = await runInContext(
-          `
-        (async () => {
-          const runtime = new ViteRuntime({
-            root,
-            fetchModule: ssrFetchModule,
-          }, new ESModulesRunner());
 
-          return async function fetcher(req) {
-            // Note: clear the moduleCache so that if the entrypoint changes we do reflect such changes
-            //       this should not be needed when HMR is working 
-            runtime.moduleCache.clear();
+      const clientContent = await readFile(clientPath, 'utf-8');
 
-            const fetch = (await runtime.executeUrl(${JSON.stringify(entrypoint)})).default.fetch;
-            return fetch(req);
-          }
-        })()
-          `,
-          vmContext,
-        );
-        const dispatchRequest = async request => {
-          return vmFetch(request);
+      server.httpServer.once('listening', () => {
+        const createRequestDispatcher = async ({ entrypoint }) => {
+          // this could be in the future replaced with websockets or an rpc mechanism
+          server.middlewares.use(async (request, resp, next) => {
+            if (!request.url.startsWith('/__fetch-module__/')) {
+              next();
+              return;
+            }
+
+            const url = new URL(`http://localhost${request.url}`);
+
+            const id = url.searchParams.get('id');
+            const importer = url.searchParams.get('importer');
+
+            const module = await server.ssrFetchModule(
+              id,
+              importer || undefined,
+            );
+
+            resp.writeHead(200, { 'Content-Type': 'application/json' });
+            resp.end(JSON.stringify(module));
+          });
+
+          const module = {};
+
+          const vmContext = createContext({
+            fetch,
+            module,
+            URL,
+            Response,
+          });
+
+          const serverAddress = server.httpServer.address();
+          const fetchModuleUrl = `${
+            typeof serverAddress === 'string'
+              ? serverAddress
+              : `http://${serverAddress.address}:${serverAddress.port}`
+          }/__fetch-module__/`;
+
+          const client = clientContent
+            .replace(/__ROOT__/g, JSON.stringify(server.config.root))
+            .replace(/__ENTRYPOINT__/g, JSON.stringify(entrypoint))
+            .replace(/__FETCH_MODULE_URL__/g, JSON.stringify(fetchModuleUrl));
+          runInContext(client, vmContext);
+
+          const dispatchRequestImplementation = (
+            module as { exports: { dispatchRequestImplementation: Function } }
+          ).exports.dispatchRequestImplementation;
+
+          const dispatchRequest = async request => {
+            return dispatchRequestImplementation(request);
+          };
+          return dispatchRequest;
         };
-        return dispatchRequest;
-      };
-      server.ssrRuntime = {
-        createRequestDispatcher,
-      };
+
+        ssrRuntimeResolve({
+          createRequestDispatcher,
+        });
+      });
+
+      server.ssrRuntime$ = ssrRuntime$;
     },
   };
 }
 
 declare module 'vite' {
   interface ViteDevServer {
-    ssrRuntime: SSrRuntime;
+    /**
+     * Note: ssrRuntime needs to be promise-based because in the plugin's `configureServer`
+     *       we need to wait until the Vite dev server Http server is ready in order to get
+     *       its address and pass it to the alternative runtime
+     */
+    ssrRuntime$: Promise<SSRRuntime>;
   }
 }
 
-type SSrRuntime = {
+type SSRRuntime = {
   createRequestDispatcher: (
     options: CreateRequestDispatcher,
   ) => Promise<Function>;

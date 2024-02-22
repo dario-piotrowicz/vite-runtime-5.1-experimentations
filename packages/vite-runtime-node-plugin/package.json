@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild --bundle --format=esm ./src/index.ts --platform=node --outfile=./dist/index.js --external:vite",
-    "build:watch": "npm run build -- --watch=forever",
+    "build": "tsup",
+    "build:watch": "tsup --watch",
     "build:types": "tsc --emitDeclarationOnly --outDir ./dist"
   },
   "files": [
@@ -16,9 +16,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "vite": "5.1.x",
     "esbuild": "^0.15.3",
     "@types/node": "^20.11.19",
     "typescript": "^5.0.4",
-    "vite": "5.1.x"
+    "tsup": "^8.0.2"
   }
 }

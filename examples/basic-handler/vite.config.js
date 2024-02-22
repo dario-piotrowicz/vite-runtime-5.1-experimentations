@@ -5,12 +5,10 @@ export function basicHandler({ entrypoint }) {
     name: 'basic-handler-plugin',
     configureServer(server) {
       return async () => {
-        console.log('\n\n[basic-handler-plugin] configureServer...\n\n');
-        const dispatchRequest = await server.ssrRuntime.createRequestDispatcher(
-          {
-            entrypoint,
-          },
-        );
+        const ssrRuntime = await server.ssrRuntime$;
+        const dispatchRequest = await ssrRuntime.createRequestDispatcher({
+          entrypoint,
+        });
 
         server.middlewares.use(async (req, res) => {
           const resp = await dispatchRequest(req);
