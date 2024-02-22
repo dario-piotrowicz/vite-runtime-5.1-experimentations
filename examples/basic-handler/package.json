@@ -12,6 +12,7 @@
   "devDependencies": {
     "vite-runtime-node-plugin": "workspace:*",
     "vite-runtime-workerd-plugin": "workspace:*",
-    "vite": "^5.1.4"
+    "vite": "^5.1.4",
+    "miniflare": "^3.20240129.3"
   }
 }
