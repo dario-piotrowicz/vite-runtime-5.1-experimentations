@@ -125,6 +125,7 @@ async function getClientDispatchRequest(
     script,
     modules: true,
     unsafeEvalBinding: 'UNSAFE_EVAL',
+    compatibilityDate: '2024-02-08',
   });
 
   return (req: Request) => {
