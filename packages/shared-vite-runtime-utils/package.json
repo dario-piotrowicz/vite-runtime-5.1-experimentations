@@ -1,5 +1,5 @@
 {
-  "name": "vite-runtime-node-plugin",
+  "name": "shared-vite-runtime-utils",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -9,17 +9,16 @@
     "build:watch": "tsup --watch",
     "build:types": "tsc --emitDeclarationOnly --outDir ./dist"
   },
-  "files": [
-    "dist"
-  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "shared-vite-runtime-utils": "workspace:*"
+  "files": [
+    "dist"
+  ],
+  "peerDependencies": {
+    "vite": "5.1.x"
   },
   "devDependencies": {
-    "vite": "5.1.x",
     "esbuild": "^0.15.3",
     "@types/node": "^20.11.19",
     "typescript": "^5.0.4",

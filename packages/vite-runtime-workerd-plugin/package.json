@@ -24,5 +24,8 @@
   },
   "peerDependencies": {
     "miniflare": "^3.20240129.3"
+  },
+  "dependencies": {
+    "shared-vite-runtime-utils": "workspace:*"
   }
 }

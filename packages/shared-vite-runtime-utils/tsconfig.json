@@ -4,7 +4,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "lib": ["ES2015"],
-    "types": ["shared-vite-runtime-utils"],
+    "types": ["vite"],
     "resolveJsonModule": true,
     "moduleResolution": "Bundler",
     "checkJs": false,
@@ -14,6 +14,5 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src", ".eslintrc.js"],
-  "exclude": ["src/client"]
+  "include": ["src", ".eslintrc.js"]
 }

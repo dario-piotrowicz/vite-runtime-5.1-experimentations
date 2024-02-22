@@ -4,6 +4,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "lib": ["ES2015"],
+    "types": ["shared-vite-runtime-utils"],
     "resolveJsonModule": true,
     "moduleResolution": "Bundler",
     "checkJs": false,
