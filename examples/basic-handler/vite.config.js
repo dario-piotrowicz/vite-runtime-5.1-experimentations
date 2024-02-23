@@ -13,7 +13,12 @@ export function basicHandler({ entrypoint }) {
 
         server.middlewares.use(async (req, res) => {
           const resp = await dispatchRequest(req);
-          res.end(await resp.text());
+          const html = await resp.text();
+          const transformedHtml = await server.transformIndexHtml(
+            req.url,
+            html,
+          );
+          res.end(transformedHtml);
         });
       };
     },
