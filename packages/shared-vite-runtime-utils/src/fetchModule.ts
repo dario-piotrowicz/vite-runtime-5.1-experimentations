@@ -30,7 +30,7 @@ export function getFetchModuleUrl(server: ViteDevServer): string {
   const serverBaseAddress =
     typeof serverAddress === 'string'
       ? serverAddress
-      : `http://${serverAddress.address}:${serverAddress.port}`;
+      : `http://${!serverAddress.address.match(/:/) ? serverAddress.address : 'localhost'}:${serverAddress.port}`;
 
   const fetchModuleUrl = `${serverBaseAddress}${fetchModulePath}`;
   return fetchModuleUrl;

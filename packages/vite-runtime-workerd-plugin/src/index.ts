@@ -81,7 +81,7 @@ async function getClientDispatchRequest(
   const serverBaseAddress =
     typeof serverAddress === 'string'
       ? serverAddress
-      : `http://${serverAddress.address}:${serverAddress.port}`;
+      : `http://${!serverAddress.address.match(/:/) ? serverAddress.address : 'localhost'}:${serverAddress.port}`;
 
   return (req: Request) => {
     return mf.dispatchFetch(`${serverBaseAddress}${req.url}`);

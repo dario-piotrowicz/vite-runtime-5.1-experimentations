@@ -1,7 +1,7 @@
 {
   "name": "shared-vite-runtime-utils",
   "main": "dist/index.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "build": "tsup",
     "build:watch": "tsup --watch",
