@@ -1,8 +1,15 @@
-import { ESModulesRunner, type FetchResult, ViteRuntime } from 'vite/runtime';
+import type { HMRPayload } from 'vite';
+import type { FetchResult, HMRRuntimeConnection } from 'vite/runtime';
+import { ESModulesRunner, ViteRuntime } from 'vite/runtime';
+
+// we use `ws` here because the node built-in `fetch`
+// method does not support the `upgrade` header
+import type { WebSocket } from 'ws';
 
 declare const __ROOT__: string;
 declare const __ENTRYPOINT__: string;
 declare const __FETCH_MODULE_URL__: string;
+declare const __VITE_HMR_URL__: string;
 
 async function fetchModule(id: string, importer?: string) {
   const idParam = `id=${id}`;
@@ -13,21 +20,50 @@ async function fetchModule(id: string, importer?: string) {
   return json as FetchResult;
 }
 
+let onHmrReceive: ((payload: HMRPayload) => void) | undefined;
+
+let hmrReady = true;
+
+// @ts-ignore
+const ws = new WebSocket(__VITE_HMR_URL__, ['vite-hmr']);
+
+ws.addEventListener('message', message => {
+  if (onHmrReceive) {
+    let data: HMRPayload = JSON.parse(message.data?.toString());
+
+    if (data?.type === 'update') {
+      // TODO: handle partial updates
+      data = { type: 'full-reload', path: '*' };
+    }
+
+    onHmrReceive(data);
+  }
+});
+
+const hmrConnection: HMRRuntimeConnection = {
+  isReady: () => hmrReady,
+  send: () => {},
+  onUpdate(receiver) {
+    onHmrReceive = receiver;
+    return () => {
+      onHmrReceive = undefined;
+    };
+  },
+};
+
 const runtime = new ViteRuntime(
   {
     root: __ROOT__,
     fetchModule,
+    hmr: {
+      connection: hmrConnection,
+    },
   },
   new ESModulesRunner(),
 );
 
 export async function dispatchRequestImplementation(req: Request) {
-  // Note: clear the moduleCache so that if the entrypoint changes the
-  //       changes are picked up (after manually refreshing the browser).
-  //       This should not be needed when HMR is working
-  runtime.moduleCache.clear();
-
-  const entrypointModule = await runtime.executeUrl(__ENTRYPOINT__);
+  const entrypointModule = await runtime.executeEntrypoint(__ENTRYPOINT__);
   // Note: here we make the assumption that an entrypoint for the Nodejs runtime
   //       has a default export with a `fetch` method that takes a request and returns
   //       a response (akin to what happens in workerd).

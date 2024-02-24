@@ -19,7 +19,7 @@ const buildPluginConfig = defineConfig({
   outDir: 'dist',
   format: ['esm'],
   platform: 'node',
-  noExternal: [/.*/],
+  external: ['ws'],
 });
 
 export default [buildClientConfig, buildPluginConfig];

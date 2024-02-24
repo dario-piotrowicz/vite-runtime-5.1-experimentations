@@ -38,3 +38,4 @@ to run the example using the Workerd runtime instead
 
 - [**vite-node-miniflare** (by _hi-ogawa_)](https://github.com/hi-ogawa/vite-plugins/blob/ba5d995046cffc0fd368dd3c3a4d05f9d2db29dc/packages/vite-node-miniflare)
 - [**vite-envs** (by _sapphi-red_)](https://github.com/sapphi-red/vite-envs/tree/7f76892b7d28f0da06826f43953cedb5b2f042c5)
+- [**hydrogen vite** (by _frandiox_)](https://github.com/Shopify/hydrogen/pull/1728)

@@ -50,10 +50,16 @@ importers:
       shared-vite-runtime-utils:
         specifier: workspace:*
         version: link:../shared-vite-runtime-utils
+      ws:
+        specifier: ^8.16.0
+        version: 8.16.0
     devDependencies:
       '@types/node':
         specifier: ^20.11.19
         version: 20.11.19
+      '@types/ws':
+        specifier: ^8.5.10
+        version: 8.5.10
       esbuild:
         specifier: ^0.15.3
         version: 0.15.18
@@ -691,6 +697,15 @@ packages:
       }
     dependencies:
       undici-types: 5.26.5
+
+  /@types/ws@8.5.10:
+    resolution:
+      {
+        integrity: sha512-vmQSUcfalpIq0R9q7uTo2lXs6eGIpt9wtnLdMv9LVpIjCA/+ufZRozlVoVelIYixx1ugCBKDhn89vnsEGOCx9A==,
+      }
+    dependencies:
+      '@types/node': 20.11.19
+    dev: true
 
   /acorn-walk@8.3.2:
     resolution:

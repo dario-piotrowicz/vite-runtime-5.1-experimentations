@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { posix, resolve } from 'node:path';
 import { Miniflare } from 'miniflare';
 
 import { type ViteDevServer } from 'vite';
@@ -103,5 +103,28 @@ async function getClientScript(
   return clientContent
     .replace(/__ROOT__/g, JSON.stringify(server.config.root))
     .replace(/__ENTRYPOINT__/g, JSON.stringify(entrypoint))
-    .replace(/__FETCH_MODULE_URL__/g, JSON.stringify(fetchModuleUrl));
+    .replace(/__FETCH_MODULE_URL__/g, JSON.stringify(fetchModuleUrl))
+    .replace(/__VITE_HMR_URL__/g, JSON.stringify(getHmrUrl(server)));
+}
+
+export function getHmrUrl(viteDevServer: ViteDevServer) {
+  const userHmrValue = viteDevServer.config.server?.hmr;
+
+  if (userHmrValue === false) {
+    console.warn(
+      'HMR is disabled. Code changes will not be reflected in neither browser or server.',
+    );
+
+    return '';
+  }
+
+  const configHmr = typeof userHmrValue === 'object' ? userHmrValue : {};
+
+  const hmrPort = configHmr.port;
+  const hmrPath = configHmr.path;
+
+  let hmrBase = viteDevServer.config.base;
+  if (hmrPath) hmrBase = posix.join(hmrBase, hmrPath);
+
+  return `http://${viteDevServer.config.server.host ?? 'localhost'}:${hmrPort ?? viteDevServer.config.server.port}${hmrBase}`;
 }
