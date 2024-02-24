@@ -10,14 +10,18 @@
   "files": [
     "dist"
   ],
+  "peerDependencies": {
+    "ws": "^8.16.0"
+  },
   "dependencies": {
     "shared-vite-runtime-utils": "workspace:*"
   },
   "devDependencies": {
-    "vite": "5.1.x",
-    "esbuild": "^0.15.3",
     "@types/node": "^20.11.19",
+    "@types/ws": "^8.5.10",
+    "esbuild": "^0.15.3",
+    "tsup": "^8.0.2",
     "typescript": "^5.0.4",
-    "tsup": "^8.0.2"
+    "vite": "5.1.x"
   }
 }

@@ -1,9 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, posix } from 'node:path';
 import { runInContext, createContext } from 'node:vm';
 
 import { type ViteDevServer } from 'vite';
+import { WebSocket } from 'ws';
 
 import type {
   SSRRuntime,
@@ -74,15 +75,16 @@ async function getClientDispatchRequest(
 
   // values/classes that we pass to the vm for convenience,
   // we can assume that any runtime will always have such built-in
-  const fetchUtilities = {
+  const networkUtilities = {
     fetch,
     URL,
     Response,
+    WebSocket,
   };
 
   const vmContext = createContext({
     module,
-    ...fetchUtilities,
+    ...networkUtilities,
   });
 
   runInContext(
@@ -113,5 +115,28 @@ async function getClientScript(
   return clientContent
     .replace(/__ROOT__/g, JSON.stringify(server.config.root))
     .replace(/__ENTRYPOINT__/g, JSON.stringify(entrypoint))
-    .replace(/__FETCH_MODULE_URL__/g, JSON.stringify(fetchModuleUrl));
+    .replace(/__FETCH_MODULE_URL__/g, JSON.stringify(fetchModuleUrl))
+    .replace(/__VITE_HMR_URL__/g, JSON.stringify(getHmrUrl(server)));
+}
+
+export function getHmrUrl(viteDevServer: ViteDevServer) {
+  const userHmrValue = viteDevServer.config.server?.hmr;
+
+  if (userHmrValue === false) {
+    console.warn(
+      'HMR is disabled. Code changes will not be reflected in neither browser or server.',
+    );
+
+    return '';
+  }
+
+  const configHmr = typeof userHmrValue === 'object' ? userHmrValue : {};
+
+  const hmrPort = configHmr.port;
+  const hmrPath = configHmr.path;
+
+  let hmrBase = viteDevServer.config.base;
+  if (hmrPath) hmrBase = posix.join(hmrBase, hmrPath);
+
+  return `ws://${viteDevServer.config.server.host ?? 'localhost'}:${hmrPort ?? viteDevServer.config.server.port}${hmrBase}`;
 }
