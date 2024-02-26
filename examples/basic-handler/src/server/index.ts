@@ -1,8 +1,8 @@
-import { getUserAgentText } from "./userAgent";
-import { getCurrentTimeText } from "./time";
+import { getUserAgentText } from './userAgent';
+import { getCurrentTimeText } from './time';
 
 export function serverSideRender() {
-    const html = `
+  const html = `
     <!doctype html>
       <html lang="en">
         <head>
@@ -24,13 +24,13 @@ export function serverSideRender() {
           <hr />
           <div id="app" style="padding-inline: 1.5rem;">
             <h1>Hello World</h1>
-            <div id="input-a"></div>
+            <div id="input-a-wrapper"></div>
             <br />
-            <div id="input-b"></div>
+            <div id="input-b-wrapper"></div>
           </div>
           <script type="module" src="../src/client/index.ts"></script>
         </body>
       </html>
     `;
-    return html;
+  return html;
 }
