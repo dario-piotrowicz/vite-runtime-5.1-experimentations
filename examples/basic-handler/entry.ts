@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import { serverSideRender } from './src/server/index.ts';
 
 export default {
