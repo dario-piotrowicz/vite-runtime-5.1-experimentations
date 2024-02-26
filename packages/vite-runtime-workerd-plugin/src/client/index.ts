@@ -21,7 +21,7 @@ export default {
     unsafeEval = env.UNSAFE_EVAL;
 
     const viteRuntime = getViteRuntime();
-    const entrypointModule = await viteRuntime.executeUrl(__ENTRYPOINT__);
+    const entrypointModule = await viteRuntime.executeEntrypoint(__ENTRYPOINT__);
     const fetch = entrypointModule.default.fetch;
     return fetch(req);
   },
