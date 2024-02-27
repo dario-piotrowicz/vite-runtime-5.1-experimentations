@@ -1,4 +1,4 @@
-name = "basic-handler"
+name = "example-framework"
 compatibility_date = "2024-02-08"
 
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)

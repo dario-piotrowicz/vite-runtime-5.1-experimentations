@@ -1,9 +1,9 @@
 import { viteRuntimeNode } from 'vite-runtime-node-plugin';
 import { viteRuntimeWorkerd } from 'vite-runtime-workerd-plugin';
 
-export function basicHandler({ entrypoint }) {
+export function exampleFramework({ entrypoint }) {
   return {
-    name: 'basic-handler-plugin',
+    name: 'example-framework-plugin',
     configureServer(server) {
       return async () => {
         const ssrRuntime = await server.ssrRuntime$;
@@ -50,7 +50,7 @@ export default {
   optimizeDeps: {
     include: [],
   },
-  plugins: [plugin(), basicHandler({ entrypoint })],
+  plugins: [plugin(), exampleFramework({ entrypoint })],
   build: {
     minify: false,
   },

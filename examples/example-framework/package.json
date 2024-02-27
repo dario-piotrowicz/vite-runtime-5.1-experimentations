@@ -1,5 +1,5 @@
 {
-  "name": "basic-handler",
+  "name": "example-framework",
   "type": "module",
   "scripts": {
     "dev:node": "_VITE_TARGET_RUNTIME=node vite",

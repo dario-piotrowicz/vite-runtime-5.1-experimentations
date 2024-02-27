@@ -15,7 +15,7 @@ to install all the dependencies and build all the packages in this repository
 You can then go to:
 
 ```
-examples/basic-handler
+examples/example-framework
 ```
 
 and run
