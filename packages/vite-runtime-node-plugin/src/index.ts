@@ -85,6 +85,7 @@ async function getClientDispatchRequest(
   const vmContext = createContext({
     module,
     ...networkUtilities,
+    console,
   });
 
   runInContext(
