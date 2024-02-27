@@ -75,6 +75,7 @@ async function getClientDispatchRequest(
     modules: true,
     unsafeEvalBinding: 'UNSAFE_EVAL',
     compatibilityDate: '2024-02-08',
+    inspectorPort: 9229
   });
 
   const serverAddress = server.httpServer.address();
