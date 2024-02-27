@@ -1,8 +1,10 @@
 if (import.meta.hot) {
   import.meta.hot.accept(() => {
-    console.log(
-      `\x1b[31mThis console.log is never triggered (i.e there's no SSR HMR)\x1b[0m`,
-    );
+    // It would be very convenient here if we'd have a simple
+    // clear way to communicate with the browser and instruct
+    // it to do a full page reload or whatever else that might
+    // be appropriate for handling the server changes
+    console.log('__server/userAgent has changed (SSR HMR is working!)__');
   });
 }
 
