@@ -5,13 +5,14 @@ import { unstable_getMiniflareWorkerOptions } from 'wrangler';
 
 import { HmrContext, type ViteDevServer } from 'vite';
 import type {
-  SSRRuntime,
   CreateRequestDispatcher,
   DispatchRequest,
+  ServerRuntime,
 } from 'shared-vite-runtime-utils';
 import {
   getFetchModuleUrl,
   setupFetchModuleEndpoint,
+  setupServerRuntimeRegistration,
 } from 'shared-vite-runtime-utils';
 
 let mf: Miniflare | null;
@@ -20,22 +21,32 @@ let script: string | null;
 export function viteRuntimeWorkerd() {
   return {
     name: 'vite-runtime-workerd-plugin',
-    async configureServer(server: ViteDevServer) {
-      let ssrRuntimeResolve: (runtime: SSRRuntime) => void;
-      const ssrRuntime$ = new Promise<SSRRuntime>(resolve => {
-        ssrRuntimeResolve = resolve;
-      });
-      server.ssrRuntime$ = ssrRuntime$;
+    configureServer(server: ViteDevServer) {
+      // IMPORTANT: the following line should not be needed
+      //            if ViteDevServer were to have the runtime
+      //            registration built in
+      setupServerRuntimeRegistration(server);
 
-      server.httpServer.once('listening', () => {
-        setupFetchModuleEndpoint(server);
-
-        const createRequestDispatcher = getCreateRequestDispatcher(server);
-
-        ssrRuntimeResolve({
-          createRequestDispatcher,
+      const runtimeCreation = () => {
+        let runtimeResolve: (runtime: ServerRuntime) => void;
+        const runtimePromise = new Promise<ServerRuntime>(resolve => {
+          runtimeResolve = resolve;
         });
-      });
+
+        server.httpServer.once('listening', () => {
+          setupFetchModuleEndpoint(server);
+
+          const createRequestDispatcher = getCreateRequestDispatcher(server);
+
+          runtimeResolve({
+            createRequestDispatcher,
+          });
+        });
+
+        return runtimePromise;
+      };
+
+      server.registerServerRuntime('workerd', runtimeCreation);
     },
     async handleHotUpdate(ctx: HmrContext) {
       if (ctx.file.endsWith('wrangler.toml')) {
