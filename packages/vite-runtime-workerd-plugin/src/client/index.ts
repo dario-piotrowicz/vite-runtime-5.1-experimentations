@@ -41,12 +41,6 @@ function getViteRuntime() {
     hmrWs.addEventListener('message', message => {
       if (onHmrReceive) {
         let data: HMRPayload = JSON.parse(message.data?.toString());
-
-        if (data?.type === 'update') {
-          // TODO: handle partial updates
-          data = { type: 'full-reload', path: '*' };
-        }
-
         onHmrReceive(data);
       }
     });
