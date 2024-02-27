@@ -1,0 +1,16 @@
+{
+  "name": "astro",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "vite-runtime-workerd-plugin": "workspace:*",
+    "astro": "0.0.0-vite-runtime-api-20240224085712",
+    "@astrojs/cloudflare": "0.0.0-cf-10-20240221064703"
+  }
+}
