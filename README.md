@@ -34,6 +34,19 @@ $ pnpm dev:workerd
 
 to run the example using the Workerd runtime instead
 
+## Monorepo Structure
+
+- `packages`
+
+  Basically contains plugins that using the Vite Runtime API allow to run code in Alternative JS Runtimes
+
+- `examples`
+
+  Contains examples of usages of the above mentioned runtime packages
+
+> [!NOTE]
+> All the packages and examples have their own README files briefly explaining the package/example
+
 ## Credits & References
 
 - [**vite-node-miniflare** (by _hi-ogawa_)](https://github.com/hi-ogawa/vite-plugins/blob/ba5d995046cffc0fd368dd3c3a4d05f9d2db29dc/packages/vite-node-miniflare)
