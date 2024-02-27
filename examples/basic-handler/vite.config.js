@@ -25,13 +25,21 @@ export function basicHandler({ entrypoint }) {
   };
 }
 
-const runtimePlugins = {
-  node: viteRuntimeNode,
-  workerd: viteRuntimeWorkerd,
+const runtimeInfos = {
+  node: {
+    plugin: viteRuntimeNode,
+    entrypoint: './entry-node.ts',
+  },
+  workerd: {
+    plugin: viteRuntimeWorkerd,
+    entrypoint: './entry-workerd.ts',
+  },
 };
 
-const runtime =
-  runtimePlugins[process.env._VITE_TARGET_RUNTIME] ?? runtimePlugins['node'];
+const runtimeInfo =
+  runtimeInfos[process.env._VITE_TARGET_RUNTIME] ?? runtimeInfos['node'];
+
+const { plugin, entrypoint } = runtimeInfo;
 
 /** @type {import('vite').UserConfig} */
 export default {
@@ -42,7 +50,7 @@ export default {
   optimizeDeps: {
     include: [],
   },
-  plugins: [runtime(), basicHandler({ entrypoint: './entry.ts' })],
+  plugins: [plugin(), basicHandler({ entrypoint })],
   build: {
     minify: false,
   },

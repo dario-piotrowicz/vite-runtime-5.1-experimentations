@@ -24,7 +24,7 @@ export default {
     const entrypointModule =
       await viteRuntime.executeEntrypoint(__ENTRYPOINT__);
     const fetch = entrypointModule.default.fetch;
-    return fetch(req);
+    return fetch(req, env);
   },
 };
 

@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { posix, resolve } from 'node:path';
 import { Miniflare } from 'miniflare';
+import { unstable_getMiniflareWorkerOptions } from 'wrangler';
 
 import { type ViteDevServer } from 'vite';
 import type {
@@ -70,12 +71,20 @@ async function getClientDispatchRequest(
 ): Promise<DispatchRequest> {
   const script = await getClientScript(server, entrypoint, fetchModuleUrl);
 
+  const { workerOptions } = unstable_getMiniflareWorkerOptions('wrangler.toml');
+
+  // serviceBindings, outboundService, durableObjects can't be passed to Miniflare
+  // due to type incompatabilities. Pass everything else
+  const { serviceBindings, outboundService, durableObjects, ...options } =
+    workerOptions;
+
   const mf = new Miniflare({
     script,
     modules: true,
     unsafeEvalBinding: 'UNSAFE_EVAL',
     compatibilityDate: '2024-02-08',
-    inspectorPort: 9229
+    inspectorPort: 9229,
+    ...options,
   });
 
   const serverAddress = server.httpServer.address();
