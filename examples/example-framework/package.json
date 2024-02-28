@@ -15,6 +15,7 @@
     "vite-runtime-workerd-plugin": "workspace:*"
   },
   "dependencies": {
-    "@cloudflare/workers-types": "^4.20240222.0"
+    "@cloudflare/workers-types": "^4.20240222.0",
+    "typescript": "^5.3.3"
   }
 }

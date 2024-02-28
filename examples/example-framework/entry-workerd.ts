@@ -1,6 +1,4 @@
-/// <reference types="vite/client" />
-
-import { serverSideRender } from './src/server/workerd';
+import { serverSideRender } from './src/server/index';
 
 export default {
   async fetch(_request: Request, env: Env) {
