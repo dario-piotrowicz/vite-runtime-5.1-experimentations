@@ -18,7 +18,8 @@
     "tsup": "^8.0.2"
   },
   "peerDependencies": {
-    "miniflare": "^3.20240129.3"
+    "miniflare": "^3.20240129.3",
+    "wrangler": "3.30.0"
   },
   "dependencies": {
     "shared-vite-runtime-utils": "workspace:*"
