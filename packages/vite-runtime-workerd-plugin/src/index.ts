@@ -3,7 +3,7 @@ import { posix, resolve } from 'node:path';
 import { Miniflare } from 'miniflare';
 import { unstable_getMiniflareWorkerOptions } from 'wrangler';
 
-import { type ViteDevServer } from 'vite';
+import { HmrContext, type ViteDevServer } from 'vite';
 import type {
   SSRRuntime,
   CreateRequestDispatcher,
@@ -13,6 +13,9 @@ import {
   getFetchModuleUrl,
   setupFetchModuleEndpoint,
 } from 'shared-vite-runtime-utils';
+
+let mf: Miniflare | null;
+let script: string | null;
 
 export function viteRuntimeWorkerd() {
   return {
@@ -33,6 +36,12 @@ export function viteRuntimeWorkerd() {
           createRequestDispatcher,
         });
       });
+    },
+    async handleHotUpdate(ctx: HmrContext) {
+      if (ctx.file.endsWith('wrangler.toml')) {
+        console.log('Refreshed Miniflare bindings from `wrangler.toml`');
+        await mf.setOptions(getMiniflareOptions());
+      }
     },
   };
 }
@@ -61,6 +70,28 @@ function getCreateRequestDispatcher(server: ViteDevServer) {
   return createRequestDispatcher;
 }
 
+function getMiniflareOptions() {
+  return {
+    script,
+    modules: true,
+    unsafeEvalBinding: 'UNSAFE_EVAL',
+    compatibilityDate: '2024-02-08',
+    inspectorPort: 9229,
+    ...getOptionsFromWranglerToml(),
+  };
+}
+
+function getOptionsFromWranglerToml() {
+  const { workerOptions } = unstable_getMiniflareWorkerOptions('wrangler.toml');
+
+  // serviceBindings, outboundService, durableObjects can't be passed to Miniflare
+  // due to type incompatabilities.
+  const { serviceBindings, outboundService, durableObjects, ...options } =
+    workerOptions;
+
+  return options;
+}
+
 /**
  * Gets the `dispatchRequest` from the client (e.g. from the js running inside the workerd)
  */
@@ -69,23 +100,9 @@ async function getClientDispatchRequest(
   entrypoint: string,
   fetchModuleUrl: string,
 ): Promise<DispatchRequest> {
-  const script = await getClientScript(server, entrypoint, fetchModuleUrl);
+  script = await getClientScript(server, entrypoint, fetchModuleUrl);
 
-  const { workerOptions } = unstable_getMiniflareWorkerOptions('wrangler.toml');
-
-  // serviceBindings, outboundService, durableObjects can't be passed to Miniflare
-  // due to type incompatabilities. Pass everything else
-  const { serviceBindings, outboundService, durableObjects, ...options } =
-    workerOptions;
-
-  const mf = new Miniflare({
-    script,
-    modules: true,
-    unsafeEvalBinding: 'UNSAFE_EVAL',
-    compatibilityDate: '2024-02-08',
-    inspectorPort: 9229,
-    ...options,
-  });
+  mf = new Miniflare(getMiniflareOptions());
 
   const serverAddress = server.httpServer.address();
   const serverBaseAddress =
