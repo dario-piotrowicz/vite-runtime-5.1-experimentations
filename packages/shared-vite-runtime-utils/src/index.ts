@@ -8,16 +8,14 @@ declare module 'vite' {
       runtimeIdentifier: string,
       factory: ServerRuntimeFactory,
     ) => void;
-    createServerRuntime: CreateServerRuntime;
+    createServerRuntime: (
+      runtimeIdentifier: string,
+      runtimeOptions?: Record<string, unknown>,
+    ) => Promise<ServerRuntime>;
   }
 }
 
 type ServerRuntimeFactory = (
-  runtimeOptions?: Record<string, unknown>,
-) => Promise<ServerRuntime>;
-
-type CreateServerRuntime = (
-  runtimeIdentifier: string,
   runtimeOptions?: Record<string, unknown>,
 ) => Promise<ServerRuntime>;
 
