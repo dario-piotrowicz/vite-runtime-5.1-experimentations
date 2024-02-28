@@ -37,13 +37,13 @@ The files/directories in the project are:
 - `entry-node.ts`
 
   Implements a minimalistic entrypoint that gets run with the
-  [`executeEntrypoint` function](https://vitejs.dev/guide/api-vite-runtime#viteruntime) in the node runtime
+  [`executeUrl` function](https://vitejs.dev/guide/api-vite-runtime#viteruntime) in the node runtime
   and imports files from `src` (specifically `src/server`).
 
 - `entry-workerd.ts`
 
   Implements a minimalistic entrypoint that gets run with the
-  [`executeEntrypoint` function](https://vitejs.dev/guide/api-vite-runtime#viteruntime) in the workerd runtime
+  [`executeUrl` function](https://vitejs.dev/guide/api-vite-runtime#viteruntime) in the workerd runtime
   and imports files from `src` (specifically `src/server`).
 
 - `src/server`
