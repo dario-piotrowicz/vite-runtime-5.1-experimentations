@@ -27,7 +27,7 @@ export function viteRuntimeWorkerd() {
       //            registration built in
       setupServerRuntimeRegistration(server);
 
-      const runtimeCreation = () => {
+      server.registerServerRuntime('workerd', () => {
         let runtimeResolve: (runtime: ServerRuntime) => void;
         const runtimePromise = new Promise<ServerRuntime>(resolve => {
           runtimeResolve = resolve;
@@ -44,9 +44,7 @@ export function viteRuntimeWorkerd() {
         });
 
         return runtimePromise;
-      };
-
-      server.registerServerRuntime('workerd', runtimeCreation);
+      });
     },
     async handleHotUpdate(ctx: HmrContext) {
       if (ctx.file.endsWith('wrangler.toml')) {

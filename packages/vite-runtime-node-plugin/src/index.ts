@@ -26,7 +26,7 @@ export function viteRuntimeNode() {
       //            registration built in
       setupServerRuntimeRegistration(server);
 
-      const runtimeCreation = () => {
+      server.registerServerRuntime('node', () => {
         let runtimeResolve: (runtime: ServerRuntime) => void;
         const runtimePromise = new Promise<ServerRuntime>(resolve => {
           runtimeResolve = resolve;
@@ -43,9 +43,7 @@ export function viteRuntimeNode() {
         });
 
         return runtimePromise;
-      };
-
-      server.registerServerRuntime('node', runtimeCreation);
+      });
     },
   };
 }
