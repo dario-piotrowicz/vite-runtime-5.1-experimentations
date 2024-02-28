@@ -2,7 +2,7 @@ import { getUserAgentText } from './userAgent';
 import { getCurrentTimeText } from './time';
 import { getCount } from './counter';
 
-export async function serverSideRender(env: Env) {
+export async function serverSideRender(env?: Env) {
   const html = `
     <!doctype html>
       <html lang="en">
@@ -19,8 +19,11 @@ export async function serverSideRender(env: Env) {
         </head>
         <body>
           <div style="display: flex; justify-content: space-between; padding: 0.25rem; margin-block: 0.15rem">
-            <span>${getUserAgentText()}</span>
-            <span>Count: ${await getCount(env.MY_KV_NAMESPACE)}</span>
+            <span>${getUserAgentText()}</span>${
+              env
+                ? `\n            <span>Count: ${await getCount(env.MY_KV_NAMESPACE)}</span>`
+                : ''
+            }
             <span>${getCurrentTimeText()}</span>
           </div>
           <hr />
