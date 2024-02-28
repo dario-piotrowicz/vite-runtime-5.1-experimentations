@@ -1,5 +1,7 @@
 import type { ViteDevServer } from 'vite';
 
+let setupFetchModuleEndpointExists = false;
+
 /**
  * Sets up a fetch-module endpoint that can be used to fetch modules
  * from the client (running in isolation in an alternative runtime)
@@ -7,6 +9,10 @@ import type { ViteDevServer } from 'vite';
  * Note: This could be implemented differently like via websockets or an rpc mechanism
  */
 export function setupFetchModuleEndpoint(server: ViteDevServer) {
+  if (setupFetchModuleEndpointExists) {
+    return;
+  }
+
   server.middlewares.use(async (request, resp, next) => {
     if (!request.url.startsWith(fetchModulePath)) {
       next();
@@ -23,6 +29,8 @@ export function setupFetchModuleEndpoint(server: ViteDevServer) {
     resp.writeHead(200, { 'Content-Type': 'application/json' });
     resp.end(JSON.stringify(module));
   });
+
+  setupFetchModuleEndpointExists = true;
 }
 
 export function getFetchModuleUrl(server: ViteDevServer): string {

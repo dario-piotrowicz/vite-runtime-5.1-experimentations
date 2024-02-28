@@ -5,13 +5,14 @@ import { unstable_getMiniflareWorkerOptions } from 'wrangler';
 
 import { HmrContext, type ViteDevServer } from 'vite';
 import type {
-  SSRRuntime,
   CreateRequestDispatcher,
   DispatchRequest,
+  ServerRuntime,
 } from 'shared-vite-runtime-utils';
 import {
   getFetchModuleUrl,
   setupFetchModuleEndpoint,
+  setupServerRuntimeRegistration,
 } from 'shared-vite-runtime-utils';
 
 let mf: Miniflare | null;
@@ -20,22 +21,40 @@ let script: string | null;
 export function viteRuntimeWorkerd() {
   return {
     name: 'vite-runtime-workerd-plugin',
-    async configureServer(server: ViteDevServer) {
-      let ssrRuntimeResolve: (runtime: SSRRuntime) => void;
-      const ssrRuntime$ = new Promise<SSRRuntime>(resolve => {
-        ssrRuntimeResolve = resolve;
-      });
-      server.ssrRuntime$ = ssrRuntime$;
+    configureServer(server: ViteDevServer) {
+      // IMPORTANT: the following line should not be needed
+      //            if ViteDevServer were to have the runtime
+      //            registration built in
+      setupServerRuntimeRegistration(server);
 
-      server.httpServer.once('listening', () => {
-        setupFetchModuleEndpoint(server);
+      server.registerServerRuntime(
+        'workerd',
+        (
+          workerdRuntimeOptions: {
+            inspectorPort?: number | false;
+          } = {},
+        ) => {
+          let runtimeResolve: (runtime: ServerRuntime) => void;
+          const runtimePromise = new Promise<ServerRuntime>(resolve => {
+            runtimeResolve = resolve;
+          });
 
-        const createRequestDispatcher = getCreateRequestDispatcher(server);
+          server.httpServer.once('listening', () => {
+            setupFetchModuleEndpoint(server);
 
-        ssrRuntimeResolve({
-          createRequestDispatcher,
-        });
-      });
+            const createRequestDispatcher = getCreateRequestDispatcher(
+              server,
+              workerdRuntimeOptions,
+            );
+
+            runtimeResolve({
+              createRequestDispatcher,
+            });
+          });
+
+          return runtimePromise;
+        },
+      );
     },
     async handleHotUpdate(ctx: HmrContext) {
       if (ctx.file.endsWith('wrangler.toml')) {
@@ -50,7 +69,10 @@ export function viteRuntimeWorkerd() {
  * gets the `createRequestDispatcher` that can be then added to the `ssrRuntime`
  * and used by third-party plugins
  */
-function getCreateRequestDispatcher(server: ViteDevServer) {
+function getCreateRequestDispatcher(
+  server: ViteDevServer,
+  options: { inspectorPort?: number | false },
+) {
   const createRequestDispatcher: CreateRequestDispatcher = async ({
     entrypoint,
   }) => {
@@ -59,6 +81,7 @@ function getCreateRequestDispatcher(server: ViteDevServer) {
       server,
       entrypoint,
       getFetchModuleUrl(server),
+      options.inspectorPort,
     );
 
     const dispatchRequest: DispatchRequest = async request => {
@@ -70,13 +93,13 @@ function getCreateRequestDispatcher(server: ViteDevServer) {
   return createRequestDispatcher;
 }
 
-function getMiniflareOptions() {
+function getMiniflareOptions(inspectorPort: number | false = 9229) {
   return {
     script,
     modules: true,
     unsafeEvalBinding: 'UNSAFE_EVAL',
     compatibilityDate: '2024-02-08',
-    inspectorPort: 9229,
+    ...(inspectorPort === false ? {} : { inspectorPort }),
     ...getOptionsFromWranglerToml(),
   };
 }
@@ -99,10 +122,11 @@ async function getClientDispatchRequest(
   server: ViteDevServer,
   entrypoint: string,
   fetchModuleUrl: string,
+  inspectorPort?: number | false,
 ): Promise<DispatchRequest> {
   script = await getClientScript(server, entrypoint, fetchModuleUrl);
 
-  mf = new Miniflare(getMiniflareOptions());
+  mf = new Miniflare(getMiniflareOptions(inspectorPort));
 
   const serverAddress = server.httpServer.address();
   const serverBaseAddress =

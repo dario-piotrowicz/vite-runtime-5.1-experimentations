@@ -7,33 +7,42 @@ import { type ViteDevServer } from 'vite';
 import { WebSocket } from 'ws';
 
 import type {
-  SSRRuntime,
   CreateRequestDispatcher,
   DispatchRequest,
+  ServerRuntime,
 } from 'shared-vite-runtime-utils';
 import {
   getFetchModuleUrl,
   setupFetchModuleEndpoint,
+  setupServerRuntimeRegistration,
 } from 'shared-vite-runtime-utils';
 
 export function viteRuntimeNode() {
   return {
     name: 'vite-runtime-node-plugin',
-    async configureServer(server: ViteDevServer) {
-      let ssrRuntimeResolve: (runtime: SSRRuntime) => void;
-      const ssrRuntime$ = new Promise<SSRRuntime>(resolve => {
-        ssrRuntimeResolve = resolve;
-      });
-      server.ssrRuntime$ = ssrRuntime$;
+    configureServer(server: ViteDevServer) {
+      // IMPORTANT: the following line should not be needed
+      //            if ViteDevServer were to have the runtime
+      //            registration built in
+      setupServerRuntimeRegistration(server);
 
-      server.httpServer.once('listening', () => {
-        setupFetchModuleEndpoint(server);
-
-        const createRequestDispatcher = getCreateRequestDispatcher(server);
-
-        ssrRuntimeResolve({
-          createRequestDispatcher,
+      server.registerServerRuntime('node', () => {
+        let runtimeResolve: (runtime: ServerRuntime) => void;
+        const runtimePromise = new Promise<ServerRuntime>(resolve => {
+          runtimeResolve = resolve;
         });
+
+        server.httpServer.once('listening', () => {
+          setupFetchModuleEndpoint(server);
+
+          const createRequestDispatcher = getCreateRequestDispatcher(server);
+
+          runtimeResolve({
+            createRequestDispatcher,
+          });
+        });
+
+        return runtimePromise;
       });
     },
   };
