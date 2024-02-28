@@ -1,5 +1,3 @@
-/// <reference types="vite/client" />
-
 import { serverSideRender } from './src/server/node';
 
 export default {

@@ -2,7 +2,7 @@ import { getUserAgentText } from './userAgent';
 import { getCurrentTimeText } from './time';
 import { getCount } from './counter';
 
-export async function serverSideRender(env: Record<string, unknown>) {
+export async function serverSideRender(env: Env) {
   const html = `
     <!doctype html>
       <html lang="en">
