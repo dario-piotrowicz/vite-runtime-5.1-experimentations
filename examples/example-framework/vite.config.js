@@ -6,10 +6,21 @@ export function exampleFramework({ entrypoint, serverRuntimeId }) {
     name: 'example-framework-plugin',
     configureServer(server) {
       return async () => {
-        // Note: here we create an instance of the chosenRuntime, interestingly we can:
+        // Note: here we create an instance of the chosen runtime, interestingly we can:
         //       - create more instances of the same runtime (with maybe different options for example)
         //       - create instances of different runtimes (to use multiple runtimes together!)
-        const serverRuntime = await server.createServerRuntime(serverRuntimeId);
+        const options =
+          serverRuntimeId === 'workerd'
+            ? {
+                // if the workerd runtime is being used we can customize its behavior, for example
+                // here we specify that no inspectorPort should be used (to disable debugging)
+                inspectorPort: false,
+              }
+            : {};
+        const serverRuntime = await server.createServerRuntime(
+          serverRuntimeId,
+          options,
+        );
 
         const dispatchRequest = await serverRuntime.createRequestDispatcher({
           entrypoint,
