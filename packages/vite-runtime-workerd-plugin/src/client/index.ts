@@ -110,11 +110,14 @@ class WorkerdModuleRunner implements ViteModuleRunner {
   ) {
     // Following what vite-node/client does:
     // https://github.com/vitest-dev/vitest/blob/d68a73908/packages/vite-node/src/client.ts#L415
-    const codeDefinition = `'use strict';async (${Object.keys(context).join(
-      ',',
-    )})=>{{`;
+    // The extra line is intentionally added to address sourcemap issues
+    const codeDefinition = `'use strict';
+    
+    async (${Object.keys(context).join(',')})=>{{`;
+
     const code = `${codeDefinition}${transformed}\n}}`;
     const fn = unsafeEval.eval(code, id);
+
     await fn(...Object.values(context));
     Object.freeze(context.__vite_ssr_exports__);
   }
