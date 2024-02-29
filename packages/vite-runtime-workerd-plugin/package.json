@@ -11,17 +11,19 @@
     "dist"
   ],
   "devDependencies": {
-    "vite": "5.1.x",
-    "esbuild": "^0.15.3",
     "@types/node": "^20.11.19",
+    "esbuild": "^0.15.3",
+    "tsup": "^8.0.2",
     "typescript": "^5.0.4",
-    "tsup": "^8.0.2"
+    "vite": "5.1.x"
   },
   "peerDependencies": {
     "miniflare": "^3.20240129.3",
     "wrangler": "3.30.0"
   },
   "dependencies": {
+    "@types/http-proxy": "^1.17.14",
+    "http-proxy": "^1.18.1",
     "shared-vite-runtime-utils": "workspace:*"
   }
 }

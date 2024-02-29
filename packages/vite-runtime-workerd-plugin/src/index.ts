@@ -2,7 +2,9 @@ import { readFile } from 'node:fs/promises';
 import { posix, resolve } from 'node:path';
 import { Miniflare } from 'miniflare';
 import { unstable_getMiniflareWorkerOptions } from 'wrangler';
-
+import httpProxy from 'http-proxy';
+import http from 'http';
+import net from 'net';
 import { HmrContext, type ViteDevServer } from 'vite';
 import type {
   SSRRuntime,
@@ -16,6 +18,9 @@ import {
 
 let mf: Miniflare | null;
 let script: string | null;
+let inspectorProxyServer: http.Server | null;
+let inspectorProxy: httpProxy | null;
+let inspectorProxyPort: number | null;
 
 export function viteRuntimeWorkerd() {
   return {
@@ -36,11 +41,21 @@ export function viteRuntimeWorkerd() {
           createRequestDispatcher,
         });
       });
+
+      inspectorProxyPort = await getNextAvailablePort(23123);
+
+      inspectorProxyServer = http.createServer();
+      inspectorProxyServer.listen(inspectorProxyPort);
+
+      console.log('Miniflare debugger port: ', inspectorProxyPort);
+      console.log(
+        'More info on debugging with Miniflare can be found here: https://developers.cloudflare.com/workers/observability/local-development-and-testing/#debug-via-breakpoints\n',
+      );
     },
     async handleHotUpdate(ctx: HmrContext) {
       if (ctx.file.endsWith('wrangler.toml')) {
+        await mf.setOptions(await getMiniflareOptions());
         console.log('Refreshed Miniflare bindings from `wrangler.toml`');
-        await mf.setOptions(getMiniflareOptions());
       }
     },
   };
@@ -70,15 +85,98 @@ function getCreateRequestDispatcher(server: ViteDevServer) {
   return createRequestDispatcher;
 }
 
-function getMiniflareOptions() {
+async function getMiniflareOptions() {
+  const inspectorPort = await setupInspectorProxy();
+
   return {
     script,
     modules: true,
     unsafeEvalBinding: 'UNSAFE_EVAL',
     compatibilityDate: '2024-02-08',
-    inspectorPort: 9229,
+    inspectorPort,
     ...getOptionsFromWranglerToml(),
   };
+}
+
+// Initialize (or re-initialize) the inspector proxy server. Returns the port
+// of the proxy target which we feed to miniflare's `inspectorPort`
+async function setupInspectorProxy() {
+  // Remove any existing listeners that call the current `proxy`
+  inspectorProxyServer.removeAllListeners('request');
+  inspectorProxyServer.removeAllListeners('upgrade');
+
+  // Dispose of the old proxy and recreate it, potentially with a new
+  // target port
+  if (inspectorProxy) {
+    inspectorProxy.removeAllListeners();
+    inspectorProxy.close();
+  }
+
+  // Find an available inspector port. This port will be passed directly
+  // to miniflare. We look for an avaiable one since a zombie workerd process
+  // might be hanging on to 9229. If it is, we don't want miniflare to hang
+  const inspectorPort = await getNextAvailablePort(9229);
+
+  // Create a new http proxy targeting our desired port
+  inspectorProxy = httpProxy.createProxyServer({
+    target: {
+      host: 'localhost',
+      port: inspectorPort,
+    },
+  });
+
+  inspectorProxyServer.on('request', (req, res) => {
+    inspectorProxy.web(req, res);
+  });
+
+  // Forward websocket requests from the user facing inspector port (23123) to the proxied
+  // inspector port (9229)
+  inspectorProxyServer.on('upgrade', function (req, socket, head) {
+    inspectorProxy.ws(req, socket, head);
+  });
+
+  return inspectorPort;
+}
+
+// Finds the next available port starting at `port`
+async function getNextAvailablePort(port: number) {
+  while (!(await isPortAvailable(port))) {
+    port++;
+  }
+  return port;
+}
+
+// Checks if the provided port is available
+async function isPortAvailable(port: number) {
+  const socket = new net.Socket();
+
+  const cleanup = () => {
+    socket.removeAllListeners('connect');
+    socket.removeAllListeners('error');
+    socket.end();
+    socket.destroy();
+    socket.unref();
+  };
+
+  return new Promise((resolve, reject) => {
+    socket.once('connect', () => {
+      // We connected, something is listening, not available
+      resolve(false);
+      cleanup();
+    });
+    socket.once('error', (e: { code: string }) => {
+      if (e.code === 'ECONNREFUSED') {
+        // Connection was refused because port was open, available
+        resolve(true);
+      } else {
+        // Unexpected error, bubble the exception
+        reject(e);
+      }
+      cleanup();
+    });
+
+    socket.connect(port);
+  });
 }
 
 function getOptionsFromWranglerToml() {
@@ -102,7 +200,8 @@ async function getClientDispatchRequest(
 ): Promise<DispatchRequest> {
   script = await getClientScript(server, entrypoint, fetchModuleUrl);
 
-  mf = new Miniflare(getMiniflareOptions());
+  const options = await getMiniflareOptions();
+  mf = new Miniflare(options);
 
   const serverAddress = server.httpServer.address();
   const serverBaseAddress =
