@@ -22,6 +22,8 @@ let inspectorProxyServer: http.Server | null;
 let inspectorProxy: httpProxy | null;
 let inspectorProxyPort: number | null;
 
+let buffer: Request[] = [];
+
 export function viteRuntimeWorkerd() {
   return {
     name: 'vite-runtime-workerd-plugin',
@@ -54,7 +56,14 @@ export function viteRuntimeWorkerd() {
     },
     async handleHotUpdate(ctx: HmrContext) {
       if (ctx.file.endsWith('wrangler.toml')) {
-        await mf.setOptions(await getMiniflareOptions());
+        await mf.dispose();
+        // Explicitly set mf to null so we can signal buffering to begin
+        mf = null;
+
+        mf = new Miniflare(await getMiniflareOptions());
+        await mf.ready;
+        drainBuffer(ctx.server);
+        // await mf.setOptions(await getMiniflareOptions());
         console.log('Refreshed Miniflare bindings from `wrangler.toml`');
       }
     },
@@ -96,6 +105,15 @@ async function getMiniflareOptions() {
     inspectorPort,
     ...getOptionsFromWranglerToml(),
   };
+}
+
+// Dispatch any buffered requests and empty the buffer
+async function drainBuffer(server: ViteDevServer) {
+  const serverBaseAddress = getServerBaseAddress(server);
+  for (const req of buffer) {
+    await mf.dispatchFetch(`${serverBaseAddress}${req.url}`);
+  }
+  buffer = [];
 }
 
 // Initialize (or re-initialize) the inspector proxy server. Returns the port
@@ -203,15 +221,24 @@ async function getClientDispatchRequest(
   const options = await getMiniflareOptions();
   mf = new Miniflare(options);
 
-  const serverAddress = server.httpServer.address();
-  const serverBaseAddress =
-    typeof serverAddress === 'string'
-      ? serverAddress
-      : `http://${!serverAddress.address.match(/:/) ? serverAddress.address : 'localhost'}:${serverAddress.port}`;
+  const serverBaseAddress = getServerBaseAddress(server);
 
   return (req: Request) => {
-    return mf.dispatchFetch(`${serverBaseAddress}${req.url}`);
+    if (mf) {
+      return mf.dispatchFetch(`${serverBaseAddress}${req.url}`);
+    }
+
+    // If miniflare is unavailable (due to being re-initialized), buffer the
+    // request instead of dispatching it
+    buffer.push(req);
   };
+}
+
+function getServerBaseAddress(server: ViteDevServer) {
+  const serverAddress = server.httpServer.address();
+  return typeof serverAddress === 'string'
+    ? serverAddress
+    : `http://${!serverAddress.address.match(/:/) ? serverAddress.address : 'localhost'}:${serverAddress.port}`;
 }
 
 /**
