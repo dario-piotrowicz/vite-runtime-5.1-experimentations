@@ -107,6 +107,32 @@ async function getMiniflareOptions() {
   };
 }
 
+/**
+ * Gets the `dispatchRequest` from the client (e.g. from the js running inside the workerd)
+ */
+async function getClientDispatchRequest(
+  server: ViteDevServer,
+  entrypoint: string,
+  fetchModuleUrl: string,
+): Promise<DispatchRequest> {
+  script = await getClientScript(server, entrypoint, fetchModuleUrl);
+
+  const options = await getMiniflareOptions();
+  mf = new Miniflare(options);
+
+  const serverBaseAddress = getServerBaseAddress(server);
+
+  return (req: Request) => {
+    if (mf) {
+      return mf.dispatchFetch(`${serverBaseAddress}${req.url}`);
+    }
+
+    // If miniflare is unavailable (due to being re-initialized), buffer the
+    // request instead of dispatching it
+    buffer.push(req);
+  };
+}
+
 // Dispatch any buffered requests and empty the buffer
 async function drainBuffer(server: ViteDevServer) {
   const serverBaseAddress = getServerBaseAddress(server);
@@ -206,32 +232,6 @@ function getOptionsFromWranglerToml() {
     workerOptions;
 
   return options;
-}
-
-/**
- * Gets the `dispatchRequest` from the client (e.g. from the js running inside the workerd)
- */
-async function getClientDispatchRequest(
-  server: ViteDevServer,
-  entrypoint: string,
-  fetchModuleUrl: string,
-): Promise<DispatchRequest> {
-  script = await getClientScript(server, entrypoint, fetchModuleUrl);
-
-  const options = await getMiniflareOptions();
-  mf = new Miniflare(options);
-
-  const serverBaseAddress = getServerBaseAddress(server);
-
-  return (req: Request) => {
-    if (mf) {
-      return mf.dispatchFetch(`${serverBaseAddress}${req.url}`);
-    }
-
-    // If miniflare is unavailable (due to being re-initialized), buffer the
-    // request instead of dispatching it
-    buffer.push(req);
-  };
 }
 
 function getServerBaseAddress(server: ViteDevServer) {
