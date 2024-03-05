@@ -66,7 +66,6 @@ export function viteRuntimeWorkerd() {
         mf = new Miniflare(await getMiniflareOptions());
         await mf.ready;
         drainBuffer(ctx.server);
-        // await mf.setOptions(await getMiniflareOptions());
         console.log('Refreshed Miniflare bindings from `wrangler.toml`');
       }
     },
