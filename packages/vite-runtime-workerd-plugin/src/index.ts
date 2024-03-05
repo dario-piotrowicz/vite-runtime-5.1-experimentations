@@ -24,6 +24,9 @@ let inspectorProxyPort: number | null;
 
 let buffer: Request[] = [];
 
+const INSPECTOR_PORT = 23123;
+const INSPECTOR_PROXY_PORT = 9229;
+
 export function viteRuntimeWorkerd() {
   return {
     name: 'vite-runtime-workerd-plugin',
@@ -44,7 +47,7 @@ export function viteRuntimeWorkerd() {
         });
       });
 
-      inspectorProxyPort = await getNextAvailablePort(23123);
+      inspectorProxyPort = await getNextAvailablePort(INSPECTOR_PROXY_PORT);
 
       inspectorProxyServer = http.createServer();
       inspectorProxyServer.listen(inspectorProxyPort);
@@ -158,8 +161,8 @@ async function setupInspectorProxy() {
 
   // Find an available inspector port. This port will be passed directly
   // to miniflare. We look for an avaiable one since a zombie workerd process
-  // might be hanging on to 9229. If it is, we don't want miniflare to hang
-  const inspectorPort = await getNextAvailablePort(9229);
+  // might be hanging on to the last one we used. If it is, we don't want miniflare to hang
+  const inspectorPort = await getNextAvailablePort(INSPECTOR_PORT);
 
   // Create a new http proxy targeting our desired port
   inspectorProxy = httpProxy.createProxyServer({
@@ -173,8 +176,8 @@ async function setupInspectorProxy() {
     inspectorProxy.web(req, res);
   });
 
-  // Forward websocket requests from the user facing inspector port (23123) to the proxied
-  // inspector port (9229)
+  // Forward websocket requests from the user facing inspector port (9229) to the proxied
+  // inspector port (23123)
   inspectorProxyServer.on('upgrade', function (req, socket, head) {
     inspectorProxy.ws(req, socket, head);
   });
