@@ -21,6 +21,9 @@ export default {
     unsafeEval = env.UNSAFE_EVAL;
 
     const viteRuntime = getViteRuntime();
+
+    globalThis.__viteRuntime = viteRuntime;
+
     const entrypointModule = await viteRuntime.executeUrl(__ENTRYPOINT__);
     const fetch = entrypointModule.default.fetch;
     return fetch(req, env);
@@ -122,7 +125,9 @@ class WorkerdModuleRunner implements ViteModuleRunner {
     Object.freeze(context.__vite_ssr_exports__);
   }
 
-  runExternalModule(filepath: string): Promise<any> {
-    throw new Error(`[vite-node-miniflare] runExternalModule: ${filepath}`);
+  async runExternalModule(filepath: string): Promise<any> {
+    throw new Error(
+      `[vite-runtime-workerd-plugin] runExternalModule: ${filepath}`,
+    );
   }
 }

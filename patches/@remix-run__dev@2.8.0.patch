@@ -1,0 +1,171 @@
+diff --git a/dist/vite/cloudflare-proxy-plugin.d.ts b/dist/vite/cloudflare-proxy-plugin.d.ts
+index a99ecf9d5477d9ec0cde2e03313b11c53b22e0f8..c339511a6bc1cae98b5e71b2b719bfdbd4b0c144 100644
+--- a/dist/vite/cloudflare-proxy-plugin.d.ts
++++ b/dist/vite/cloudflare-proxy-plugin.d.ts
+@@ -1,15 +1,20 @@
+-import { type AppLoadContext } from "@remix-run/server-runtime";
+ import { type Plugin } from "vite";
+-import { type GetPlatformProxyOptions, type PlatformProxy } from "wrangler";
+-type CfProperties = Record<string, unknown>;
+-type LoadContext<Env, Cf extends CfProperties> = {
+-    cloudflare: Omit<PlatformProxy<Env, Cf>, "dispose">;
++export declare const cloudflareDevProxyVitePlugin: () => Plugin;
++declare module 'vite' {
++    interface ViteDevServer {
++        /**
++         * Note: ssrRuntime needs to be promise-based because in the plugin's `configureServer`
++         *       we need to wait until the Vite dev server Http server is ready in order to get
++         *       its address and pass it to the alternative runtime
++         */
++        ssrRuntime$: Promise<SSRRuntime>;
++    }
++}
++export type SSRRuntime = {
++    createRequestDispatcher: CreateRequestDispatcher;
+ };
+-type GetLoadContext<Env, Cf extends CfProperties> = (args: {
+-    request: Request;
+-    context: LoadContext<Env, Cf>;
+-}) => AppLoadContext | Promise<AppLoadContext>;
+-export declare const cloudflareDevProxyVitePlugin: <Env, Cf extends CfProperties>({ getLoadContext, ...options }?: {
+-    getLoadContext?: GetLoadContext<Env, Cf> | undefined;
+-} & GetPlatformProxyOptions) => Plugin;
+-export {};
++export type CreateRequestDispatcher = (options: CreateRequestDispatcherOptions) => Promise<DispatchRequest>;
++export type CreateRequestDispatcherOptions = {
++    entrypoint: string;
++};
++export type DispatchRequest = (req: Request) => Response | Promise<Response>;
+diff --git a/dist/vite/cloudflare-proxy-plugin.js b/dist/vite/cloudflare-proxy-plugin.js
+index 33e4662316c69d9c90de8b9f95a5dbf9fa05e6f6..e19634a1d6533b2f5d0ff793af67ecf39dd7e73c 100644
+--- a/dist/vite/cloudflare-proxy-plugin.js
++++ b/dist/vite/cloudflare-proxy-plugin.js
+@@ -12,24 +12,17 @@
+ 
+ Object.defineProperty(exports, '__esModule', { value: true });
+ 
+-var serverRuntime = require('@remix-run/server-runtime');
++var path = require('path');
+ var nodeAdapter = require('./node-adapter.js');
+ 
+-let serverBuildId = "virtual:remix/server-build";
+-function importWrangler() {
+-  try {
+-    return import('wrangler');
+-  } catch (_) {
+-    throw Error("Could not import `wrangler`. Do you have it installed?");
+-  }
+-}
+ const NAME = "vite-plugin-remix-cloudflare-proxy";
+-const cloudflareDevProxyVitePlugin = ({
+-  getLoadContext,
+-  ...options
+-} = {}) => {
++let readyResolve;
++const ready = new Promise(resolve => readyResolve = resolve);
++const cloudflareDevProxyVitePlugin = () => {
+   return {
+     name: NAME,
++    // @ts-ignore
++    ready,
+     config: () => ({
+       ssr: {
+         resolve: {
+@@ -45,29 +38,17 @@ const cloudflareDevProxyVitePlugin = ({
+       }
+     },
+     configureServer: async viteDevServer => {
+-      let {
+-        getPlatformProxy
+-      } = await importWrangler();
+-      // Do not include `dispose` in Cloudflare context
+-      let {
+-        dispose,
+-        ...cloudflare
+-      } = await getPlatformProxy(options);
+-      let context = {
+-        cloudflare
+-      };
+-      return () => {
++      return async () => {
++        let ssrRuntime = await viteDevServer.ssrRuntime$;
++        let requestDispatcher = await ssrRuntime.createRequestDispatcher({
++          entrypoint: path.join(__dirname, 'static', 'cloudflare-dev-entrypoint.ts')
++        });
++        readyResolve();
+         if (!viteDevServer.config.server.middlewareMode) {
+           viteDevServer.middlewares.use(async (nodeReq, nodeRes, next) => {
+             try {
+-              let build = await viteDevServer.ssrLoadModule(serverBuildId);
+-              let handler = serverRuntime.createRequestHandler(build, "development");
+               let req = nodeAdapter.fromNodeRequest(nodeReq);
+-              let loadContext = getLoadContext ? await getLoadContext({
+-                request: req,
+-                context
+-              }) : context;
+-              let res = await handler(req, loadContext);
++              let res = await requestDispatcher(req);
+               await nodeAdapter.toNodeRequest(res, nodeRes);
+             } catch (error) {
+               next(error);
+diff --git a/dist/vite/plugin.js b/dist/vite/plugin.js
+index 07dc5f0375e0694b799cf88ef9d03bc2450abec0..c16e77eabd34e272c72d9472927602728071f038 100644
+--- a/dist/vite/plugin.js
++++ b/dist/vite/plugin.js
+@@ -768,7 +768,10 @@ const remixVitePlugin = (remixUserConfig = {}) => {
+           }
+         }
+       });
+-      return () => {
++      return async () => {
++        let cloudflarePlugin = viteDevServer.config.plugins.find(p => p.name === "vite-plugin-remix-cloudflare-proxy");
++        await (cloudflarePlugin === null || cloudflarePlugin === void 0 ? void 0 : cloudflarePlugin.ready);
++
+         // Let user servers handle SSR requests in middleware mode,
+         // otherwise the Vite plugin will handle the request
+         if (!viteDevServer.config.server.middlewareMode) {
+diff --git a/dist/vite/static/cloudflare-dev-entrypoint.d.ts b/dist/vite/static/cloudflare-dev-entrypoint.d.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..4c752f6f23bc06a3e77e2f81f4f7b2b6f593dbb4
+--- /dev/null
++++ b/dist/vite/static/cloudflare-dev-entrypoint.d.ts
+@@ -0,0 +1,4 @@
++declare const _default: {
++    fetch(req: Request, env: Record<string, unknown>, ctx: unknown): Promise<Response>;
++};
++export default _default;
+diff --git a/dist/vite/static/cloudflare-dev-entrypoint.ts b/dist/vite/static/cloudflare-dev-entrypoint.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..cd10f015ee089da6e652465bdea89aceeddb36f8
+--- /dev/null
++++ b/dist/vite/static/cloudflare-dev-entrypoint.ts
+@@ -0,0 +1,29 @@
++import { createRequestHandler } from "@remix-run/server-runtime";
++import {
++    type ServerBuild,
++} from "@remix-run/server-runtime";
++import type { ViteRuntime } from 'vite/runtime';
++
++const serverBuildId = "virtual:remix/server-build";
++
++declare const __viteRuntime: ViteRuntime;
++
++const build = await __viteRuntime.executeUrl(serverBuildId) as ServerBuild;
++
++const handler = createRequestHandler(build, "development");
++
++export default {
++    async fetch(req: Request, env: Record<string, unknown>, ctx: unknown) {
++        let loadContext = {
++            cloudflare: {
++                env,
++                cf: (req as any).cf,
++                ctx,
++                // @ts-ignore
++                caches,
++            }
++        };
++        let res = await handler(req, loadContext);
++        return res;
++    }
++}
