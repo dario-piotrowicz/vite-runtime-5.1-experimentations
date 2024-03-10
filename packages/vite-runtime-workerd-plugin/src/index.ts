@@ -37,6 +37,13 @@ export function viteRuntimeWorkerd() {
       });
       server.ssrRuntime$ = ssrRuntime$;
 
+      // Hack to make miniflare not getting unnecessarily initialed twice when multiple Vite dev servers are spawn
+      // (Since Remix currently does this: https://github.com/remix-run/remix/blob/d18d98b/packages/remix-dev/vite/plugin.ts#L1216)
+      if(!global.miniflareInitialized) {
+        globalThis.miniflareInitialized = true;
+        return;
+      }
+
       server.httpServer.once('listening', () => {
         setupFetchModuleEndpoint(server);
 
