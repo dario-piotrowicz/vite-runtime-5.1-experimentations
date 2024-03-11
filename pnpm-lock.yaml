@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   '@remix-run/dev@2.8.0':
-    hash: 4yep5ow3jcn6hvggm2lhtv2bsm
+    hash: 64druquwmyljmkrffdfmrfyoke
     path: patches/@remix-run__dev@2.8.0.patch
 
 importers:
@@ -62,7 +62,7 @@ importers:
     devDependencies:
       '@remix-run/dev':
         specifier: 2.8.0
-        version: 2.8.0(patch_hash=4yep5ow3jcn6hvggm2lhtv2bsm)(@remix-run/serve@2.8.0)(typescript@5.3.3)(vite@5.1.4)
+        version: 2.8.0(patch_hash=64druquwmyljmkrffdfmrfyoke)(@remix-run/serve@2.8.0)(typescript@5.3.3)(vite@5.1.4)
       '@remix-run/server-runtime':
         specifier: 2.8.0
         version: 2.8.0(typescript@5.3.3)
@@ -147,7 +147,7 @@ importers:
         version: 4.20240222.0
       '@remix-run/dev':
         specifier: 2.8.0
-        version: 2.8.0(patch_hash=4yep5ow3jcn6hvggm2lhtv2bsm)(typescript@5.3.3)(vite@5.1.4)(wrangler@3.30.0)
+        version: 2.8.0(patch_hash=64druquwmyljmkrffdfmrfyoke)(typescript@5.3.3)(vite@5.1.4)(wrangler@3.30.0)
       '@remix-run/server-runtime':
         specifier: 2.8.0
         version: 2.8.0(typescript@5.3.3)
@@ -340,8 +340,8 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       '@babel/types': 7.24.0
-      '@jridgewell/gen-mapping': 0.3.5
-      '@jridgewell/trace-mapping': 0.3.25
+      '@jridgewell/gen-mapping': 0.3.3
+      '@jridgewell/trace-mapping': 0.3.22
       jsesc: 2.5.2
     dev: true
 
@@ -1590,7 +1590,7 @@ packages:
       typescript: 5.3.3
     dev: false
 
-  /@remix-run/dev@2.8.0(patch_hash=4yep5ow3jcn6hvggm2lhtv2bsm)(@remix-run/serve@2.8.0)(typescript@5.3.3)(vite@5.1.4):
+  /@remix-run/dev@2.8.0(patch_hash=64druquwmyljmkrffdfmrfyoke)(@remix-run/serve@2.8.0)(typescript@5.3.3)(vite@5.1.4):
     resolution: {integrity: sha512-kZtmK/7vKk7QV8CGCyC9Or3wP7EwL4rOJS9vObmTRAPv8mLyznR8bJxeNVWA7ICnCGejF8s2X3abVJrkEMiFlg==}
     engines: {node: '>=18.0.0'}
     hasBin: true
@@ -1681,7 +1681,7 @@ packages:
     dev: true
     patched: true
 
-  /@remix-run/dev@2.8.0(patch_hash=4yep5ow3jcn6hvggm2lhtv2bsm)(typescript@5.3.3)(vite@5.1.4)(wrangler@3.30.0):
+  /@remix-run/dev@2.8.0(patch_hash=64druquwmyljmkrffdfmrfyoke)(typescript@5.3.3)(vite@5.1.4)(wrangler@3.30.0):
     resolution: {integrity: sha512-kZtmK/7vKk7QV8CGCyC9Or3wP7EwL4rOJS9vObmTRAPv8mLyznR8bJxeNVWA7ICnCGejF8s2X3abVJrkEMiFlg==}
     engines: {node: '>=18.0.0'}
     hasBin: true
