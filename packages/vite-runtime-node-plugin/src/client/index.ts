@@ -45,7 +45,7 @@ const hmrConnection: HMRRuntimeConnection = {
   },
 };
 
-const runtime = new ViteRuntime(
+const viteRuntime = new ViteRuntime(
   {
     root: __ROOT__,
     fetchModule,
@@ -56,11 +56,13 @@ const runtime = new ViteRuntime(
   new ESModulesRunner(),
 );
 
+globalThis.__viteRuntime = viteRuntime;
+
 export async function dispatchRequestImplementation(
   req: Request,
   env: Record<string, unknown>,
 ) {
-  const entrypointModule = await runtime.executeUrl(__ENTRYPOINT__);
+  const entrypointModule = await viteRuntime.executeUrl(__ENTRYPOINT__);
   // Note: here we make the assumption that an entrypoint for the Nodejs runtime
   //       has a default export with a `fetch` method that takes a request and returns
   //       a response (akin to what happens in workerd).

@@ -10,5 +10,10 @@
   "license": "MIT",
   "devDependencies": {
     "prettier": "^3.2.5"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@remix-run/dev@2.8.0": "patches/@remix-run__dev@2.8.0.patch"
+    }
   }
 }

@@ -86,11 +86,22 @@ async function getClientDispatchRequest(
     module,
     ...networkUtilities,
     console,
+    // Note: without passing `setTimeout` the `runInContext` errors with: `ReferenceError: Buffer is not defined`
+    //       and if `Buffer` is passed here without `setTimeout` the error becomes: `ReferenceError: setTimeout is not defined`
+    //       I am not really sure what's going on...
+    setTimeout,
   });
 
   runInContext(
     await getClientScript(server, entrypoint, fetchModuleUrl),
     vmContext,
+    {
+      // temporary hack needed because in the `@remix-run/dev` package the `node-dev-entrypoint.ts`
+      // file has been written by hand and is not bundled (for simplicity)
+      importModuleDynamically: specifier => {
+        return import(specifier) as any;
+      },
+    },
   );
 
   const dispatchRequestImplementation = (
