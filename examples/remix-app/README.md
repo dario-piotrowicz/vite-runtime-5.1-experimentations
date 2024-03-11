@@ -18,4 +18,4 @@ $ pnpm dev
 >
 > To make this work changes had to be made in the `@remix-run/dev` package, those are applied with a pnpm patch
 >
-> you can see the source code used to generate such patch here: https://github.com/dario-piotrowicz/remix/tree/vite-runtime-5.1-experimentations
+> you can see the source code used to generate such patch here: https://github.com/dario-piotrowicz/remix/tree/vite-runtime-5.1-experimentations-with-node

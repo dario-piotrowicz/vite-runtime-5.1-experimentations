@@ -1,4 +1,8 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 import { Form, json, useLoaderData } from '@remix-run/react';
 
 export const meta: MetaFunction = () => {
@@ -20,7 +24,7 @@ function getUserAgentText(): string {
   }
 }
 
-const key = "__my-key__";
+const key = '__my-key__';
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const { MY_KV } = context.cloudflare.env;
@@ -31,14 +35,14 @@ export async function loader({ context }: LoaderFunctionArgs) {
 export async function action({ request, context }: ActionFunctionArgs) {
   const { MY_KV: myKv } = context.cloudflare.env;
 
-  if (request.method === "POST") {
+  if (request.method === 'POST') {
     const formData = await request.formData();
-    const value = formData.get("value") as string;
+    const value = formData.get('value') as string;
     await myKv.put(key, value);
     return null;
   }
 
-  if (request.method === "DELETE") {
+  if (request.method === 'DELETE') {
     await myKv.delete(key);
     return null;
   }
@@ -55,9 +59,7 @@ export default function Index() {
       <hr />
       <h2>{userAgentText}</h2>
       <hr />
-      <h2>
-        KV Usage example
-      </h2>
+      <h2>KV Usage example</h2>
       {value ? (
         <>
           <p>Value: {value}</p>

@@ -2,5 +2,5 @@
 // by running `wrangler types`
 
 interface Env {
-	MY_KV: KVNamespace;
+  MY_KV: KVNamespace;
 }
