@@ -2,6 +2,7 @@
   "name": "vite-runtime-workerd-plugin",
   "main": "dist/index.cjs",
   "type": "module",
+  "types": "dist/index",
   "scripts": {
     "build": "tsup",
     "build:watch": "tsup --watch",

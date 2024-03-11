@@ -1,8 +1,6 @@
 import { vitePlugin as remix } from '@remix-run/dev';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore -- TODO: fix the types in the vite-runtime-workerd-plugin
 import { viteRuntimeWorkerd } from 'vite-runtime-workerd-plugin';
 
 export default defineConfig({
