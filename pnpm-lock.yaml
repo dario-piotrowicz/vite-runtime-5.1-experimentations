@@ -39,7 +39,77 @@ importers:
         specifier: workspace:*
         version: link:../../packages/vite-runtime-workerd-plugin
 
-  examples/remix-app:
+  examples/remix-app-node:
+    dependencies:
+      '@remix-run/node':
+        specifier: 2.8.0
+        version: 2.8.0(typescript@5.3.3)
+      '@remix-run/react':
+        specifier: 2.8.0
+        version: 2.8.0(react-dom@..+Repos+my-repos+remix+node_modules+react-dom)(react@..+Repos+my-repos+remix+node_modules+react)(typescript@5.3.3)
+      '@remix-run/serve':
+        specifier: 2.8.0
+        version: 2.8.0(typescript@5.3.3)
+      isbot:
+        specifier: ^4.1.0
+        version: 4.4.0
+      react:
+        specifier: /Users/dario/Repos/my-repos/remix/node_modules/react
+        version: link:../../../../Repos/my-repos/remix/node_modules/react
+      react-dom:
+        specifier: /Users/dario/Repos/my-repos/remix/node_modules/react-dom
+        version: link:../../../../Repos/my-repos/remix/node_modules/react-dom
+    devDependencies:
+      '@remix-run/dev':
+        specifier: 2.8.0
+        version: 2.8.0(patch_hash=4yep5ow3jcn6hvggm2lhtv2bsm)(@remix-run/serve@2.8.0)(typescript@5.3.3)(vite@5.1.4)
+      '@remix-run/server-runtime':
+        specifier: 2.8.0
+        version: 2.8.0(typescript@5.3.3)
+      '@types/react':
+        specifier: ^18.2.20
+        version: 18.2.63
+      '@types/react-dom':
+        specifier: ^18.2.7
+        version: 18.2.20
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.7.4
+        version: 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.57.0)(typescript@5.3.3)
+      '@typescript-eslint/parser':
+        specifier: ^6.7.4
+        version: 6.21.0(eslint@8.57.0)(typescript@5.3.3)
+      eslint:
+        specifier: ^8.38.0
+        version: 8.57.0
+      eslint-import-resolver-typescript:
+        specifier: ^3.6.1
+        version: 3.6.1(@typescript-eslint/parser@6.21.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0)
+      eslint-plugin-import:
+        specifier: ^2.28.1
+        version: 2.29.1(@typescript-eslint/parser@6.21.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-plugin-jsx-a11y:
+        specifier: ^6.7.1
+        version: 6.8.0(eslint@8.57.0)
+      eslint-plugin-react:
+        specifier: ^7.33.2
+        version: 7.34.0(eslint@8.57.0)
+      eslint-plugin-react-hooks:
+        specifier: ^4.6.0
+        version: 4.6.0(eslint@8.57.0)
+      typescript:
+        specifier: ^5.1.6
+        version: 5.3.3
+      vite:
+        specifier: ^5.1.0
+        version: 5.1.4(@types/node@20.11.19)
+      vite-runtime-node-plugin:
+        specifier: workspace:*
+        version: link:../../packages/vite-runtime-node-plugin
+      vite-tsconfig-paths:
+        specifier: ^4.2.1
+        version: 4.3.1(typescript@5.3.3)(vite@5.1.4)
+
+  examples/remix-app-workerd:
     dependencies:
       '@remix-run/cloudflare':
         specifier: 2.8.0
@@ -135,76 +205,6 @@ importers:
       wrangler:
         specifier: ^3.24.0
         version: 3.30.0(@cloudflare/workers-types@4.20240222.0)
-
-  examples/remix-app-node:
-    dependencies:
-      '@remix-run/node':
-        specifier: 2.8.0
-        version: 2.8.0(typescript@5.3.3)
-      '@remix-run/react':
-        specifier: 2.8.0
-        version: 2.8.0(react-dom@..+Repos+my-repos+remix+node_modules+react-dom)(react@..+Repos+my-repos+remix+node_modules+react)(typescript@5.3.3)
-      '@remix-run/serve':
-        specifier: 2.8.0
-        version: 2.8.0(typescript@5.3.3)
-      isbot:
-        specifier: ^4.1.0
-        version: 4.4.0
-      react:
-        specifier: /Users/dario/Repos/my-repos/remix/node_modules/react
-        version: link:../../../../Repos/my-repos/remix/node_modules/react
-      react-dom:
-        specifier: /Users/dario/Repos/my-repos/remix/node_modules/react-dom
-        version: link:../../../../Repos/my-repos/remix/node_modules/react-dom
-    devDependencies:
-      '@remix-run/dev':
-        specifier: 2.8.0
-        version: 2.8.0(patch_hash=4yep5ow3jcn6hvggm2lhtv2bsm)(@remix-run/serve@2.8.0)(typescript@5.3.3)(vite@5.1.4)
-      '@remix-run/server-runtime':
-        specifier: 2.8.0
-        version: 2.8.0(typescript@5.3.3)
-      '@types/react':
-        specifier: ^18.2.20
-        version: 18.2.63
-      '@types/react-dom':
-        specifier: ^18.2.7
-        version: 18.2.20
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^6.7.4
-        version: 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.57.0)(typescript@5.3.3)
-      '@typescript-eslint/parser':
-        specifier: ^6.7.4
-        version: 6.21.0(eslint@8.57.0)(typescript@5.3.3)
-      eslint:
-        specifier: ^8.38.0
-        version: 8.57.0
-      eslint-import-resolver-typescript:
-        specifier: ^3.6.1
-        version: 3.6.1(@typescript-eslint/parser@6.21.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0)
-      eslint-plugin-import:
-        specifier: ^2.28.1
-        version: 2.29.1(@typescript-eslint/parser@6.21.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
-      eslint-plugin-jsx-a11y:
-        specifier: ^6.7.1
-        version: 6.8.0(eslint@8.57.0)
-      eslint-plugin-react:
-        specifier: ^7.33.2
-        version: 7.34.0(eslint@8.57.0)
-      eslint-plugin-react-hooks:
-        specifier: ^4.6.0
-        version: 4.6.0(eslint@8.57.0)
-      typescript:
-        specifier: ^5.1.6
-        version: 5.3.3
-      vite:
-        specifier: ^5.1.0
-        version: 5.1.4(@types/node@20.11.19)
-      vite-runtime-node-plugin:
-        specifier: workspace:*
-        version: link:../../packages/vite-runtime-node-plugin
-      vite-tsconfig-paths:
-        specifier: ^4.2.1
-        version: 4.3.1(typescript@5.3.3)(vite@5.1.4)
 
   packages/shared-vite-runtime-utils:
     dependencies:
@@ -343,8 +343,8 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       '@babel/types': 7.24.0
-      '@jridgewell/gen-mapping': 0.3.3
-      '@jridgewell/trace-mapping': 0.3.22
+      '@jridgewell/gen-mapping': 0.3.5
+      '@jridgewell/trace-mapping': 0.3.25
       jsesc: 2.5.2
     dev: true
 
