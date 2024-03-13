@@ -15,7 +15,8 @@ export function setupFetchModuleEndpoint(server: ViteDevServer) {
 
     const url = new URL(`http://localhost${request.url}`);
 
-    const id = url.searchParams.get('id');
+    // note: searchParams.get replaces `+` characters with spaces, we need to revert that
+    const id = url.searchParams.get('id').replace(/ /g, '+');
     const importer = url.searchParams.get('importer');
 
     const module = await server.ssrFetchModule(id, importer || undefined);

@@ -37,6 +37,13 @@ export function viteRuntimeWorkerd() {
       });
       server.ssrRuntime$ = ssrRuntime$;
 
+      // Hack to make miniflare not getting unnecessarily initialed twice when multiple Vite dev servers are spawn
+      // (Since Remix currently does this: https://github.com/remix-run/remix/blob/d18d98b/packages/remix-dev/vite/plugin.ts#L1216)
+      if(!global.miniflareInitialized) {
+        globalThis.miniflareInitialized = true;
+        return;
+      }
+
       server.httpServer.once('listening', () => {
         setupFetchModuleEndpoint(server);
 
@@ -126,7 +133,12 @@ async function getClientDispatchRequest(
 
   return (req: Request) => {
     if (mf) {
-      return mf.dispatchFetch(`${serverBaseAddress}${req.url}`);
+      // if the url starts with "http" (indicating that it is a full url) use that, otherwise
+      // if is it just a path, prepend the server address to it
+      const url = req.url.startsWith('http')
+        ? req.url
+        : `${serverBaseAddress}${req.url}`;
+      return mf.dispatchFetch(url, req as unknown);
     }
 
     // If miniflare is unavailable (due to being re-initialized), buffer the
@@ -139,7 +151,7 @@ async function getClientDispatchRequest(
 async function drainBuffer(server: ViteDevServer) {
   const serverBaseAddress = getServerBaseAddress(server);
   for (const req of buffer) {
-    await mf.dispatchFetch(`${serverBaseAddress}${req.url}`);
+    await mf.dispatchFetch(`${serverBaseAddress}${req.url}`, req as unknown);
   }
   buffer = [];
 }
